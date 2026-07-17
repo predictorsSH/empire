@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { MapContainer, TileLayer } from "react-leaflet";
 import type { Map as LeafletMap } from "leaflet";
 import { GeoJsonLayer } from "./GeoJsonLayer";
+import { WaterLabels } from "./WaterLabels";
 import { loadSnapshotGeoJson } from "../../lib/geojson";
 import { matchContentByEntityName } from "../../lib/content";
 import { useAppStore, useSnappedYear } from "../../store/useAppStore";
@@ -86,6 +87,7 @@ export function HistoricalMap({ contentEntries }: HistoricalMapProps) {
           attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
           url="https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png"
         />
+        <WaterLabels />
         {loaded && (
           <GeoJsonLayer
             featureCollection={loaded.data}

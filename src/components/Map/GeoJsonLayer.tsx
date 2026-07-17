@@ -5,6 +5,7 @@ import type { Feature } from "geojson";
 import type { MapFeatureCollection, MapFeatureProperties } from "../../types/map";
 import type { ContentEntry } from "../../types/content";
 import { isYearWithinRange } from "../../lib/content";
+import { FeatureLabels } from "./FeatureLabels";
 
 interface GeoJsonLayerProps {
   featureCollection: MapFeatureCollection;
@@ -123,6 +124,7 @@ export function GeoJsonLayer({
         style={style}
         onEachFeature={onEachFeature}
       />
+      <FeatureLabels featureCollection={featureCollection} dimmed={dimmed} />
       {fallbackMarkerEntries.map((entry) => (
         <Marker
           key={entry.id}
