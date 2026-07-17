@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -sL -o LICENSE_check.txt -w \"HTTP:%{http_code}\\\\n\" https://raw.githubusercontent.com/aourednik/historical-basemaps/master/LICENSE)",
+      "Bash(curl -sL \"https://api.github.com/repos/aourednik/historical-basemaps\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('license:', d.get\\('license'\\)\\); print\\('description:', d.get\\('description'\\)\\); print\\('size\\(KB\\):', d.get\\('size'\\)\\)\")",
+      "Bash(curl -sI \"https://raw.githubusercontent.com/aourednik/historical-basemaps/master/geojson/world_1500.geojson\")",
+      "Bash(npm -v)",
+      "Read(//opt/homebrew/bin/**)",
+      "Read(//usr/local/bin/**)",
+      "Bash(command -v fnm volta asdf n)",
+      "Bash(command -v brew)",
+      "Bash(brew install *)"
+    ]
+  }
+}

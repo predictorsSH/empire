@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+:root {
+  --color-bg: #f6f1e6;
+  --color-bg-panel: #fffdf8;
+  --color-border: #d8cdb3;
+  --color-text: #2b2620;
+  --color-text-muted: #6b6153;
+  --color-accent: #8a3324;
+  --color-accent-soft: #c9a35a;
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Noto Serif KR", serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", Roboto, sans-serif;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #171310;
+    --color-bg-panel: #201b16;
+    --color-border: #3c342a;
+    --color-text: #ece5d8;
+    --color-text-muted: #a89c88;
+    --color-accent: #d97757;
+    --color-accent-soft: #c9a35a;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.font-serif-heading {
+  font-family: var(--font-serif);
+}
+
+/* Leaflet 컨테이너가 부모 flex/grid 크기를 그대로 채우도록 */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: #cfe3ec;
+}
+
+@media (prefers-color-scheme: dark) {
+  .leaflet-container {
+    background: #1a2530;
+  }
+}
+
+/* 타임라인 슬라이더 커스텀 스타일 */
+input[type="range"].timeline-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-border);
+  outline: none;
+}
+
+input[type="range"].timeline-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  border: 2px solid var(--color-bg-panel);
+  box-shadow: 0 0 0 1px var(--color-accent);
+  cursor: pointer;
+  margin-top: -6px;
+}
+
+input[type="range"].timeline-range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  border: 2px solid var(--color-bg-panel);
+  box-shadow: 0 0 0 1px var(--color-accent);
+  cursor: pointer;
+}
+
+input[type="range"].timeline-range::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+input[type="range"].timeline-range::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: transparent;
+}
