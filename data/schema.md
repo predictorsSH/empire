@@ -20,6 +20,7 @@ type ContentEntry = {
   endYear: number;             // 이 항목이 "현재 진행 중"으로 간주되는 마지막 연도
   mapEntityNames: string[];    // 지도 GeoJSON의 properties.NAME과 매칭할 표기들. 빈 배열 허용(overview용)
   mapEntityNamesVerified: boolean; // true = 실제 GeoJSON에서 확인됨, false = 추정치(개발 시 재확인 필요)
+  mapLabel?: string;           // 지도 위 라벨용 짧은 한국어 명칭. 콘텐츠가 매칭되는 폴리곤은 데이터셋 NAME 대신 이걸 표시 (2026-07-18 추가)
   approxCenter: [number, number]; // [lon, lat] 폴백 좌표 / 지도 포커스 이동용 중심점
   summary: string;             // 목록(EmptyStateList)에 쓸 1~2문장 요약
   body: string[];              // 본문 문단 배열. history.md의 bullet을 문단 단위로 재구성

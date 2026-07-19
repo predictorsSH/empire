@@ -3,9 +3,14 @@ import { Marker, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import type { Geometry, Position } from "geojson";
 import type { MapFeatureCollection } from "../../types/map";
+import type { ContentEntry } from "../../types/content";
+import { matchContentByEntityName } from "../../lib/content";
 
 interface FeatureLabelsProps {
   featureCollection: MapFeatureCollection;
+  /** 콘텐츠가 매칭되는 폴리곤은 데이터셋 NAME 대신 연도에 맞는 한국어 라벨(mapLabel)을 표시 */
+  contentEntries: ContentEntry[];
+  selectedYear: number;
   dimmed?: boolean;
 }
 
@@ -48,7 +53,12 @@ function labelIcon(name: string): L.DivIcon {
   });
 }
 
-export function FeatureLabels({ featureCollection, dimmed = false }: FeatureLabelsProps) {
+export function FeatureLabels({
+  featureCollection,
+  contentEntries,
+  selectedYear,
+  dimmed = false,
+}: FeatureLabelsProps) {
   const map = useMap();
   const [zoom, setZoom] = useState(() => map.getZoom());
   useMapEvents({
@@ -104,13 +114,33 @@ export function FeatureLabels({ featureCollection, dimmed = false }: FeatureLabe
     });
   }, [candidates, zoom, map]);
 
+  // 콘텐츠가 매칭되는 폴리곤은 한국어 라벨로 교체.
+  // 같은 NAME이 시대별로 다른 항목에 매칭될 수 있으므로(예: 'Parthian Empire'가
+  // 224년 이전엔 파르티아, 이후엔 사산조 — 데이터셋이 300년 스냅샷까지 옛 표기를 유지)
+  // 반드시 연도 기반 매칭(matchContentByEntityName)을 거친다.
+  const labelTexts = useMemo(() => {
+    const texts = new Map<string, string>();
+    for (const c of visible) {
+      const { entry, isYearMismatch } = matchContentByEntityName(
+        contentEntries,
+        c.name,
+        selectedYear
+      );
+      texts.set(
+        c.name,
+        entry && !isYearMismatch ? (entry.mapLabel ?? entry.title) : c.name
+      );
+    }
+    return texts;
+  }, [visible, contentEntries, selectedYear]);
+
   return (
     <>
       {visible.map((c) => (
         <Marker
           key={c.name}
           position={c.center}
-          icon={labelIcon(c.name)}
+          icon={labelIcon(labelTexts.get(c.name) ?? c.name)}
           interactive={false}
           opacity={dimmed ? 0.4 : 1}
           zIndexOffset={-1000}

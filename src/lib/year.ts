@@ -13,10 +13,12 @@ export function formatYearShort(year: number): string {
 }
 
 /**
- * 이진 탐색으로 정렬된 스냅샷 연도 배열 중 `year`와 가장 가까운 값을 찾는다.
- * data/MAP_DATA_SOURCE.md §5-2: 동률(정확히 중간)이면 더 이른 연도(과거)를 우선.
+ * 이진 탐색으로 정렬된 스냅샷 연도 배열 중 `year` 이하의 가장 최신 값(floor)을 찾는다.
+ * 미래 스냅샷으로 앞당겨 붙이면 아직 일어나지 않은 역사(예: 251년 → 300년의 사두정치)가
+ * 보이므로, "그 시점까지 확정된 지도"인 과거 스냅샷을 보여준다.
+ * `year`가 첫 스냅샷보다 이르면 첫 스냅샷을 반환한다.
  */
-export function snapToNearestSnapshot(year: number, sortedSnapshotYears: number[]): number {
+export function snapToFloorSnapshot(year: number, sortedSnapshotYears: number[]): number {
   if (sortedSnapshotYears.length === 0) {
     throw new Error("snapshotYears가 비어 있습니다.");
   }
@@ -33,8 +35,5 @@ export function snapToNearestSnapshot(year: number, sortedSnapshotYears: number[
     else hi = mid;
   }
 
-  const loDist = year - sortedSnapshotYears[lo];
-  const hiDist = sortedSnapshotYears[hi] - year;
-  // 동률이면 더 이른(과거) 연도 우선
-  return hiDist < loDist ? sortedSnapshotYears[hi] : sortedSnapshotYears[lo];
+  return sortedSnapshotYears[lo];
 }

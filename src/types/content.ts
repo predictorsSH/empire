@@ -19,6 +19,8 @@ export interface ContentEntry {
   endYear: number;
   mapEntityNames: string[]; // 지도 GeoJSON properties.NAME과 매칭할 표기들 (빈 배열 허용)
   mapEntityNamesVerified: boolean;
+  /** 지도 위 라벨용 짧은 한국어 명칭. 콘텐츠가 매칭되는 폴리곤은 NAME 대신 이걸 표시 (없으면 title, 그것도 없으면 NAME) */
+  mapLabel?: string;
   approxCenter: [number, number]; // [lon, lat]
   summary: string;
   body: string[];

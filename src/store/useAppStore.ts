@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { create } from "zustand";
-import { snapToNearestSnapshot, TIMELINE_START_YEAR } from "../lib/year";
+import { snapToFloorSnapshot, TIMELINE_START_YEAR } from "../lib/year";
 
 interface AppState {
   /** 슬라이더의 연속값. -3000 ~ 1920 (PLAN.md §5.3) */
@@ -50,6 +50,6 @@ export function useSnappedYear(): number {
   const snapshotYears = useAppStore((s) => s.snapshotYears);
   return useMemo(() => {
     if (snapshotYears.length === 0) return selectedYear;
-    return snapToNearestSnapshot(selectedYear, snapshotYears);
+    return snapToFloorSnapshot(selectedYear, snapshotYears);
   }, [selectedYear, snapshotYears]);
 }

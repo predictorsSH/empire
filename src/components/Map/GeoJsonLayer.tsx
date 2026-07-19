@@ -124,7 +124,12 @@ export function GeoJsonLayer({
         style={style}
         onEachFeature={onEachFeature}
       />
-      <FeatureLabels featureCollection={featureCollection} dimmed={dimmed} />
+      <FeatureLabels
+        featureCollection={featureCollection}
+        contentEntries={contentEntries}
+        selectedYear={selectedYear}
+        dimmed={dimmed}
+      />
       {fallbackMarkerEntries.map((entry) => (
         <Marker
           key={entry.id}
