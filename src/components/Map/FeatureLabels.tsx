@@ -5,6 +5,7 @@ import type { Geometry, Position } from "geojson";
 import type { MapFeatureCollection } from "../../types/map";
 import type { ContentEntry } from "../../types/content";
 import { matchContentByEntityName } from "../../lib/content";
+import { translateMapName } from "../../data/nameTranslations";
 
 interface FeatureLabelsProps {
   featureCollection: MapFeatureCollection;
@@ -128,7 +129,7 @@ export function FeatureLabels({
       );
       texts.set(
         c.name,
-        entry && !isYearMismatch ? (entry.mapLabel ?? entry.title) : c.name
+        entry && !isYearMismatch ? (entry.mapLabel ?? entry.title) : translateMapName(c.name)
       );
     }
     return texts;

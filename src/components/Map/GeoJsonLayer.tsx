@@ -6,6 +6,7 @@ import type { MapFeatureCollection, MapFeatureProperties } from "../../types/map
 import type { ContentEntry } from "../../types/content";
 import { isYearWithinRange } from "../../lib/content";
 import { FeatureLabels } from "./FeatureLabels";
+import { translateMapName } from "../../data/nameTranslations";
 
 interface GeoJsonLayerProps {
   featureCollection: MapFeatureCollection;
@@ -112,7 +113,12 @@ export function GeoJsonLayer({
     const props = feature.properties as MapFeatureProperties | null;
     const name = props?.NAME;
     if (!name || name.trim().toLowerCase() === "none") return;
-    layer.bindTooltip(name, { sticky: true, className: "text-xs" });
+    const nameLower = name.trim().toLowerCase();
+    const matched = contentEntries.find((e) =>
+      e.mapEntityNames.some((n) => n.trim().toLowerCase() === nameLower)
+    );
+    const displayName = matched ? (matched.mapLabel ?? matched.title) : translateMapName(name);
+    layer.bindTooltip(displayName, { sticky: true, className: "text-xs" });
     layer.on("click", () => onFeatureClick(name));
   }
 

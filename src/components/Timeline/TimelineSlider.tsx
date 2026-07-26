@@ -1,12 +1,21 @@
-import { useState, type KeyboardEvent } from "react";
-import { useAppStore, useSnappedYear } from "../../store/useAppStore";
+import { useMemo, useState, type KeyboardEvent } from "react";
+import { useAppStore } from "../../store/useAppStore";
 import { formatYear, TIMELINE_START_YEAR, TIMELINE_END_YEAR } from "../../lib/year";
 
-const STEP_YEAR = 1;
-const BIG_STEP_YEAR = 10;
+const BIG_STEP_INDEX = 5;
 
-function clamp(year: number) {
-  return Math.min(TIMELINE_END_YEAR, Math.max(TIMELINE_START_YEAR, year));
+/** 사용자가 입력한 임의 연도를 실제 스냅샷 목록 중 가장 가까운 값으로 반올림 (동률이면 이전 연도 우선) */
+function nearestSnapshotIndex(year: number, snapshotYears: number[]): number {
+  let best = 0;
+  let bestDist = Infinity;
+  for (let i = 0; i < snapshotYears.length; i++) {
+    const dist = Math.abs(snapshotYears[i] - year);
+    if (dist < bestDist) {
+      bestDist = dist;
+      best = i;
+    }
+  }
+  return best;
 }
 
 export function TimelineSlider() {
@@ -14,55 +23,62 @@ export function TimelineSlider() {
   const snapshotYears = useAppStore((s) => s.snapshotYears);
   const setYear = useAppStore((s) => s.setYear);
   const setDragging = useAppStore((s) => s.setDragging);
-  const snappedYear = useSnappedYear();
   const [yearInputValue, setYearInputValue] = useState("");
 
+  // 슬라이더는 연속된 연도가 아니라 실제 지도 스냅샷 목록 위의 "인덱스"를 이동한다.
+  // 이렇게 하면 슬라이더가 항상 정확히 지도가 표시 중인 연도를 가리켜 불일치가 생기지 않는다.
+  const currentIndex = useMemo(() => {
+    if (snapshotYears.length === 0) return 0;
+    const idx = snapshotYears.indexOf(selectedYear);
+    return idx >= 0 ? idx : nearestSnapshotIndex(selectedYear, snapshotYears);
+  }, [selectedYear, snapshotYears]);
+
+  const lastIndex = Math.max(0, snapshotYears.length - 1);
+
+  function goToIndex(index: number) {
+    const clamped = Math.min(lastIndex, Math.max(0, index));
+    const year = snapshotYears[clamped];
+    if (year !== undefined) setYear(year);
+  }
+
   function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
-    // PLAN.md §5.4: ←/→ 1년, Shift+←/→ 10년, Home/End 시작/끝
     if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
-      const delta = e.shiftKey ? BIG_STEP_YEAR : STEP_YEAR;
+      const delta = e.shiftKey ? BIG_STEP_INDEX : 1;
       const sign = e.key === "ArrowLeft" ? -1 : 1;
       e.preventDefault();
-      setYear(clamp(selectedYear + sign * delta));
+      goToIndex(currentIndex + sign * delta);
     } else if (e.key === "Home") {
       e.preventDefault();
-      setYear(TIMELINE_START_YEAR);
+      goToIndex(0);
     } else if (e.key === "End") {
       e.preventDefault();
-      setYear(TIMELINE_END_YEAR);
+      goToIndex(lastIndex);
     }
   }
 
   function handleYearInputSubmit() {
     const parsed = Number.parseInt(yearInputValue, 10);
-    if (!Number.isNaN(parsed)) {
-      setYear(clamp(parsed));
+    if (!Number.isNaN(parsed) && snapshotYears.length > 0) {
+      goToIndex(nearestSnapshotIndex(parsed, snapshotYears));
     }
     setYearInputValue("");
   }
 
-  const trackPercent = ((selectedYear - TIMELINE_START_YEAR) / (TIMELINE_END_YEAR - TIMELINE_START_YEAR)) * 100;
+  const trackPercent = lastIndex === 0 ? 0 : (currentIndex / lastIndex) * 100;
 
   return (
     <div className="border-t border-[var(--color-border)] bg-[var(--color-bg-panel)] px-4 py-3 sm:px-6">
       <div className="mb-1 flex items-center justify-between text-xs text-[var(--color-text-muted)]">
         <span>{formatYear(TIMELINE_START_YEAR)}</span>
-        <span className="font-medium text-[var(--color-text)]">
-          슬라이더: {formatYear(selectedYear)}
-          {selectedYear !== snappedYear && (
-            <span className="ml-1 text-[var(--color-text-muted)]">
-              (지도: {formatYear(snappedYear)})
-            </span>
-          )}
-        </span>
+        <span className="font-medium text-[var(--color-text)]">{formatYear(selectedYear)}</span>
         <span>{formatYear(TIMELINE_END_YEAR)}</span>
       </div>
 
       <div className="flex items-center gap-2">
         <button
           type="button"
-          aria-label="1년 전으로"
-          onClick={() => setYear(clamp(selectedYear - STEP_YEAR))}
+          aria-label="이전 시점으로"
+          onClick={() => goToIndex(currentIndex - 1)}
           className="shrink-0 rounded border border-[var(--color-border)] px-2 py-1 text-sm hover:border-[var(--color-accent-soft)]"
         >
           ◀
@@ -72,25 +88,19 @@ export function TimelineSlider() {
           <input
             type="range"
             className="timeline-range"
-            list="snapshot-ticks"
-            min={TIMELINE_START_YEAR}
-            max={TIMELINE_END_YEAR}
-            step={STEP_YEAR}
-            value={selectedYear}
-            aria-label="타임라인 연도"
+            min={0}
+            max={lastIndex}
+            step={1}
+            value={currentIndex}
+            aria-label="타임라인 시점"
             aria-valuetext={formatYear(selectedYear)}
-            onInput={(e) => setYear(Number(e.currentTarget.value))}
+            onInput={(e) => goToIndex(Number(e.currentTarget.value))}
             onKeyDown={handleKeyDown}
             onPointerDown={() => setDragging(true)}
             onPointerUp={() => setDragging(false)}
             onBlur={() => setDragging(false)}
           />
-          <datalist id="snapshot-ticks">
-            {snapshotYears.map((y) => (
-              <option key={y} value={y} />
-            ))}
-          </datalist>
-          {/* 현재 값 위치를 보여주는 보조 마커(브라우저별 datalist tick 렌더 편차 보완) */}
+          {/* 현재 값 위치를 보여주는 보조 마커 */}
           <div
             className="pointer-events-none absolute -top-1 h-1 w-0.5 bg-[var(--color-accent)]"
             style={{ left: `calc(${trackPercent}% - 1px)` }}
@@ -99,8 +109,8 @@ export function TimelineSlider() {
 
         <button
           type="button"
-          aria-label="1년 후로"
-          onClick={() => setYear(clamp(selectedYear + STEP_YEAR))}
+          aria-label="다음 시점으로"
+          onClick={() => goToIndex(currentIndex + 1)}
           className="shrink-0 rounded border border-[var(--color-border)] px-2 py-1 text-sm hover:border-[var(--color-accent-soft)]"
         >
           ▶
